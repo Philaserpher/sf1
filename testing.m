@@ -1,8 +1,10 @@
-read = "Sounds/500hz-107658.wav";
-%read = "Sounds/organ.wav";
+%read = "Sounds/500hz-107658.wav";
+read = "Sounds/organ.wav";
 [signal,Fs] = audioread(read);
 
-N = 500;
+N = 50;
+
+
 
 fft_spect = fft(signal, N);
 dft_spect = DFT_manual(signal, N);

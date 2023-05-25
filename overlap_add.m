@@ -15,12 +15,14 @@ x=buffer(x_in,N,overlap);
 % Get dimensions
 [N_samps,N_frames]=size(x);
 
-% Extends hanning array
+% Extends hann filter array and times by x
 x_w=repmat(hanning(N),1,N_frames).*x;
 
 for frame_no=1:N_frames-2
+    % Convert items in next frame to freq domain
     X_w(:,frame_no)=fft(x_w(:,frame_no));
     Y_w(:,frame_no)=X_w(:,frame_no);
+
     Y_w(2:N/8,frame_no)=0.1*X_w(2:N/8,frame_no);
     Y_w(N/4+1:N/2,frame_no)=0.2*X_w(N/4+1:N/2,frame_no);
     Y_w(N:-1:N/2+2,frame_no)=conj(Y_w(2:N/2,frame_no));
@@ -39,3 +41,24 @@ xlabel('t')
 ylabel('Amplitude')
 title('Noisy vs denoised signal')
 hold off
+
+% Calculate the spectra
+X_in = fft(x_in);
+Y_out = fft(y_out);
+X_in_noiseless = fft(x_in_noiseless);
+
+% Plot the spectra
+figure;
+subplot(3,1,1);
+plot(abs(X_in));
+title('Noisy Spectrum');
+ylabel('Magnitude');
+subplot(3,1,2);
+plot(abs(Y_out));
+title('Denoised Spectrum');
+ylabel('Magnitude');
+subplot(3,1,3);
+plot(abs(X_in_noiseless));
+title('Noiseless Spectrum');
+ylabel('Magnitude');
+xlabel('Frequency Bin');

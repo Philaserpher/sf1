@@ -44,6 +44,6 @@ title('Hamming')
 xlim([46 54])
 
 subplot(2, 2, 4);
-plot(f, exp_spectrum)
+plot(f, extra_spectrum)
 title('Chebyshev')
 xlim([46 54])

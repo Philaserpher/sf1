@@ -48,3 +48,5 @@ xlabel('t');
 ylabel('Amplitude');
 title('Original, Noisy, and Denoised Signals');
 hold off;
+
+

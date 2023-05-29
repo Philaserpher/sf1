@@ -1,9 +1,11 @@
 read = "Sounds/ishika_talking.wav";
 
+% Load file
 [x_in_noiseless, Fs] = audioread(read);
 x_in_noiseless = x_in_noiseless(:,1);
 L = max(size(x_in_noiseless));
 
+% Change dimensions
 x_in_noiseless = x_in_noiseless.';
 
 % Set up our noisy signal as x_in
@@ -50,8 +52,7 @@ for N = N_range
         % Apply Wiener filter to obtain the estimated clean signal spectrum
         estimated_clean_spectrum = X_w(:, frame_no) .* (clean_power_spectrum ./ (clean_power_spectrum + noise_power_spectrum(:, frame_no)));
 
-        % Set the phase of the estimated clean signal spectrum same as the original signal
-        estimated_clean_spectrum = abs(estimated_clean_spectrum) .* exp(1i * angle(X_w(:, frame_no)));
+        estimated_clean_spectrum(N/2+2:N) = conj(estimated_clean_spectrum(N/2:-1:2));
 
         % Convert the estimated clean spectrum back to time domain
         y_w(:, frame_no) = ifft(estimated_clean_spectrum);

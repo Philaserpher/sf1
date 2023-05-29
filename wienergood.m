@@ -1,15 +1,11 @@
-%read = 'Sounds/piano_clean_note4.wav';
-%read = 'Sounds/letter_t.wav';
-%read = 'Sounds/organ.wav';
-%read = 'Sounds/piano_clean.wav';
-%read = "Sounds/500hz-107658.wav";
-read = "Sounds/ishika_talking.wav";
+read = "Sounds/ishika_talking2.wav";
 
-
+% Load file
 [x_in_noiseless, Fs] = audioread(read);
 x_in_noiseless = x_in_noiseless(:,1);
 L = max(size(x_in_noiseless));
 
+% Change dimensions
 x_in_noiseless = x_in_noiseless.';
 
 % Set up our noisy signal as x_in
@@ -21,7 +17,7 @@ x_in = x_in_noiseless + noise;
 y_out = 0 * x_in;
 
 % N and overlap
-N = 2^15;
+N = 2^13;
 overlap = N/2;
 
 % Partition data into samples size N overlapping by overlap
@@ -30,14 +26,14 @@ x = buffer(x_in, N, overlap);
 % Get dimensions
 [N_samps, N_frames] = size(x);
 
-% Extends Hann filter array and times by x
+% Extends Hann filter array and applies to x
 x_w = repmat(hanning(N), 1, N_frames) .* x;
 
 % Define the noise power spectrum
 noise_power_spectrum = abs(fft(noise)).^2;
 
-y_w = zeros(N, N_frames-2);  % Initialize y_w with appropriate size
-
+% Initialize y_w and X_w with appropriate size
+y_w = zeros(N, N_frames - 2);  
 X_w = zeros(N, N_frames - 2);
 
 for frame_no = 1:N_frames-2
@@ -46,15 +42,17 @@ for frame_no = 1:N_frames-2
     
     % Estimate the power spectrum of the clean signal using Wiener filter
     clean_power_spectrum = abs(X_w(:, frame_no)).^2 - noise_power_spectrum(:, frame_no);
-    clean_power_spectrum = max(clean_power_spectrum, 0); % Ensure non-negativity
+
+    % Can't be negative!!!
+    clean_power_spectrum = max(clean_power_spectrum, 0); 
     
     % Apply Wiener filter to obtain the estimated clean signal spectrum
     estimated_clean_spectrum = X_w(:, frame_no) .* (clean_power_spectrum ./ (clean_power_spectrum + noise_power_spectrum(:, frame_no)));
     
-    % Set the phase of the estimated clean signal spectrum same as the original signal
-    estimated_clean_spectrum = abs(estimated_clean_spectrum) .* exp(1i * angle(X_w(:, frame_no)));
+    % ADD LINE TO MAKE CONJUGATE SYMMETRIC
+    estimated_clean_spectrum(N/2+2:N) = conj(estimated_clean_spectrum(N/2:-1:2));
     
-    % Convert the estimated clean spectrum back to time domain
+    % IFFT the spectrum
     y_w(:, frame_no) = ifft(estimated_clean_spectrum);
 end
 
@@ -77,8 +75,8 @@ subplot(3, 1, 3);
 plot(t, real(y_out));
 title('Processed Output');
 
-% Compute the frequency axis
 
+% Make frequency vector
 freq = (0:L/2) * (Fs/L);
 
 % Compute the spectra of the original, noisy, and processed signals
@@ -108,7 +106,12 @@ title('Processed Output Spectrum');
 xlabel('Frequency');
 ylabel('Magnitude');
 
+
+% Play the sounds
 sound(real(x_in), Fs)
 pause(L*T + 1)
 sound(real(y_out), Fs)
 
+% Export files
+audiowrite("Sounds\ishika_talking2_noise.wav", x_in, Fs)
+audiowrite("Sounds\ishika_talking2_filtered.wav", y_out, Fs)

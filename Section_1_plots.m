@@ -1,23 +1,24 @@
-% MATLAB code
-
-% Specify parameters
 theta_true = 10; % true value of theta
 
-% Generate estimates for different N
+% Create a range for values of N
 N_values = 1:1:100; % range of N values
-theta_ML_N = zeros(1, length(N_values)); % array to save ML estimates
-theta_Bayes_N = zeros(1, length(N_values)); % array to save Bayesian estimates
+% store the estimates in arrays (initialise to 0)
+theta_ML_N = zeros(1, length(N_values));
+theta_Bayes_N = zeros(1, length(N_values));
 
+% use index because the step size in N is variable
 index = 1;
+
+% standard deviation of the noise
+sigma_err = 1; 
+
 for N = N_values
-    % Set noise variance
-    sigma_err = 2; % standard deviation of the noise
 
-    % Generate data
-    err = sigma_err * randn(N,1); % Gaussian noise
-    y = theta_true + err; % observations
+    % make noise and signal
+    err = sigma_err * randn(N,1);
+    y = theta_true + err; 
 
-    % Maximum Likelihood estimation
+    % ML is just mean
     theta_ML_N(index) = mean(y);
 
     % Bayesian estimation with sigma_prior = 1
@@ -34,7 +35,7 @@ theta_Bayes_sigma_prior = zeros(1, length(sigma_prior_values)); % array to save 
 % Fix N to 100 for sigma_prior plot
 N = 100;
 % Generate data
-sigma_err = 2; % standard deviation of the noise
+sigma_err = 1; % standard deviation of the noise
 err = sigma_err * randn(N,1); % Gaussian noise
 y = theta_true + err; % observations
 
@@ -78,3 +79,39 @@ plot(sigma_err_values, theta_Bayes_sigma_err, 'b');
 xlabel('sigma_err');
 ylabel('Bayesian Estimate');
 title('Bayesian Estimate vs sigma err');
+
+% Constants
+mu_prior = 12; % set your prior mean
+var_prior = 2; % set your prior variance
+var_noise = 1; % set your noise variance
+real_val = 10;
+N = 10; % number of data points
+
+% Generate some data
+yn = real_val + sqrt(var_noise)*randn(N,1); 
+
+% Prior Distribution
+theta_range = linspace(mu_prior-3*sqrt(var_prior), mu_prior+3*sqrt(var_prior), 1000);
+prior = normpdf(theta_range, mu_prior, sqrt(var_prior));
+
+% Likelihood
+log_likelihood = sum(log(normpdf(yn, theta_range, sqrt(var_noise))), 1);
+likelihood = exp(log_likelihood - max(log_likelihood));  % shift values to avoid underflow
+likelihood = likelihood / trapz(theta_range, likelihood);  % normalize to form a proper distribution
+
+% Posterior Distribution
+mu_post = (mu_prior/var_prior + sum(yn)/var_noise)/(1/var_prior + N/var_noise);
+var_post = 1/(1/var_prior + N/var_noise);
+posterior = normpdf(theta_range, mu_post, sqrt(var_post));
+
+% Plotting
+figure
+plot(theta_range, prior, 'LineWidth', 2)
+hold on
+plot(theta_range, likelihood, 'LineWidth', 2)
+plot(theta_range, posterior, 'LineWidth', 2)
+legend('Prior', 'Likelihood', 'Posterior')
+xlabel('\theta')
+ylabel('Density')
+grid on
+

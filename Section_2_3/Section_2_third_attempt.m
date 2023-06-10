@@ -1,9 +1,9 @@
-N = 10;
+N = 5;
 P = 2;
 x = generate_linear(N, P, [1; 1]);
 G = zeros(N, P);
 for n = 1:N
-    G(n, :) = [1, n^2];
+    G(n, :) = [1, n];
 end
 
 % ML estimator
@@ -19,7 +19,7 @@ Sigma_post = inv(inv(Sigma0) + G'*G);
 mu_post = Sigma_post * (inv(Sigma0)*mu0 + G'*x);
 
 % Plot parameters
-[X,Y] = meshgrid(2:0.01:4.5, 0.06:0.0001:0.11); % adjust these values based on your domain
+[X,Y] = meshgrid(0:0.01:5, 0:0.0001:2); % adjust these values based on your domain
 pos = [X(:) Y(:)];
 
 % Calculate posterior probability density function

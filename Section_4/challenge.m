@@ -20,6 +20,7 @@ log_evidence = zeros(N-L+1, 1);
 theta_post = zeros(N-L+1, 1);
 
 % Iterate over possible offsets
+% Not vectorised
 for offset = 1:(N-L+1)
     % Construct G matrix
     G = zeros(N, 1);
@@ -34,12 +35,12 @@ for offset = 1:(N-L+1)
     
     % Calculate log-evidence for this offset and store
     log_evidence(offset) = log(sqrt(Sigma_post/(2*pi*sigma_n_sq))) - ...
-        0.5 * (y' * y - 2 * mu_post * G' * y + mu_post^2 * G' * G) / sigma_n_sq;
+        0.5 * (y' * y - 2 * mu_post * G' * y + mu_post^2 * (G' * G)) / sigma_n_sq;
 end
 
 % Find most probable offset and its corresponding theta
 [max_log_evidence, most_prob_offset] = max(log_evidence);
-most_prob_theta = theta_post(most_prob_offset);
+most_prob_theta = theta_post(most_prob_offset)
 
 % Compute posterior probabilities for offset
 posterior_prob_offset = exp(log_evidence - max_log_evidence);
